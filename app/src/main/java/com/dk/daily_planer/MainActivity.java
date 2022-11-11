@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                tasks.addAll(taskDao.getAll());
+                tasks.addAll(taskDao.getAllByDate(calendar.toInstant().toString().split("T")[0]));
             }
         }).start();
 
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                                 task.setNameTask(nameTask);
                                 task.setDeskTask(descTask);
                                 task.setDate(calendar.toInstant().toString().split("T")[0]);
-                                if(nameTask.equals("") || task.getDateFinish() == null || task.getDateStart() == null || ((myHourStart == myHourEnd) && (myMinStart > myMinEnd)) || myHourEnd < myHourStart) {
+                                if(nameTask.equals("") || task.getDateFinish() == null || task.getDateStart() == null || ((myHourStart == myHourEnd) && (myMinStart >= myMinEnd)) || myHourEnd < myHourStart) {
                                     Toast.makeText(getApplicationContext(),"Пустое имя задачи или неверный формат времени!", Toast.LENGTH_SHORT).show();
                                     return;
                                 }
