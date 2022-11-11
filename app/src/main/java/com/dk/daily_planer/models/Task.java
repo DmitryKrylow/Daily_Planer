@@ -10,6 +10,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.sql.Time;
+import java.sql.Timestamp;
 
 @Entity
 public class Task {
@@ -41,7 +42,7 @@ public class Task {
 
     @Override
     public String toString(){
-        return String.format("%s\n%s-%s",nameTask, new Time(dateStart),new Time(dateFinish));
+        return String.format("%s\n%02d:%02d-%02d:%02d",nameTask, new Timestamp(dateStart).getHours(),new Timestamp(dateStart).getMinutes(),new Timestamp(dateFinish).getHours(),new Timestamp(dateFinish).getMinutes());
     }
     @RequiresApi(api = Build.VERSION_CODES.N)
     public Spanned showFullInfo(){
@@ -49,7 +50,7 @@ public class Task {
                 "<ul>\n" +
                 "<li><em><strong><h3>Продолжительность: %s</h3></strong></em><em><strong></strong></em></li>\n" +
                 "<li><em><strong><h3>Описание: %s<h3></strong></em></li>\n" +
-                "</ul>",nameTask,String.format("%s-%s",new Time(dateStart),new Time(dateFinish)),deskTask),Html.FROM_HTML_MODE_COMPACT);
+                "</ul>",nameTask,String.format("%02d:%02d-%02d:%02d",new Timestamp(dateStart).getHours(),new Timestamp(dateStart).getMinutes(),new Timestamp(dateFinish).getHours(),new Timestamp(dateFinish).getMinutes()),deskTask),Html.FROM_HTML_MODE_COMPACT);
     }
 
     public String getDate() {
