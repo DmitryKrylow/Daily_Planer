@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.TimeZone;
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity {
     final int DIALOG_TIME = 1;
 
@@ -72,16 +73,16 @@ public class MainActivity extends AppCompatActivity {
 
     Task task = new Task();
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
         init();
-
+        setOnClick();
     }
-    @RequiresApi(api = Build.VERSION_CODES.O)
+
     void init(){
         calendar = Calendar.getInstance();
 
@@ -102,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<Task>(getApplicationContext(), R.layout.list_item, tasks);
         listViewTask.setAdapter(adapter);
 
+    }
+
+    void setOnClick(){
         buttonAddTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -198,7 +202,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(callTaskFull);
             }
         });
+
     }
+
     TimePickerDialog.OnTimeSetListener myCallBack = new TimePickerDialog.OnTimeSetListener() {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             Calendar calendar = Calendar.getInstance();
@@ -219,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
     protected Dialog onCreateDialog(int id) {
         if (id == DIALOG_TIME) {
             TimePickerDialog tpd = new TimePickerDialog(this, myCallBack, 0, 0, true);
