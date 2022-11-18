@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,69 +28,65 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.dk.daily_planer.interfaces.TaskDao;
 import com.dk.daily_planer.models.Task;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.TimeZone;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity {
-    final int DIALOG_TIME = 1;
-
-    List<Task> tasks = new ArrayList<>();
-    final Context context = this;
+    //ПРОВЕРКА НА ДИАЛОГ ВРЕМЕНИ
+    private final int DIALOG_TIME = 1;
+    //НАСТРОЙКИ ОСНОВОГО ВЬЮ
+    private List<Task> tasks = new ArrayList<>();
+    private final Context context = this;
     private CalendarView calendarViewOnMain;
     private ListView listViewTask;
     private Button buttonAddTask;
-    ArrayAdapter<Task> adapter;
+    private ArrayAdapter<Task> adapter;
 
-    AppDatabase database;
-    TaskDao taskDao;
-
-    int myHourStart = 0;
-    int myMinStart = 0;
-    int myHourEnd= 0;
-    int myMinEnd = 0;
-    int selDay;
-    int selYear;
-    int selMont;
-
+    //БАЗА ДАННЫХ
+    private AppDatabase database;
+    private TaskDao taskDao;
+    //ВРЕМЯ
+    private int myHourStart = 0;
+    private int myMinStart = 0;
+    private int myHourEnd= 0;
+    private int myMinEnd = 0;
+    private int selDay;
+    private int selYear;
+    private int selMont;
+    //ТЕКСТ В ДИАЛОГЕ
     private TextView timeStartView;
     private TextView timeEndView;
-
+    //ФЛАГ О ВЫБОРЕ ВРЕМЕНИ ОКОНЧАНИЯ И НАЧАЛА
     private boolean flag = false;
 
-    Calendar calendar;
-
-    Task task = new Task();
+    private Calendar calendar;
+    //ОБЪЕКТ ЗАДАЧИ ДЛЯ ЗАПОЛНЕНИЯ
+    private Task task = new Task();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
         init();
         setOnClick();
     }
 
-    void init(){
+    void init() {
+        //НАСТРОЙКА КАЛЕНДАРЯ
         calendar = Calendar.getInstance();
-
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        //ОСНОВНОЕ ВЬЮ
         calendarViewOnMain = findViewById(R.id.calendarView);
         listViewTask = findViewById(R.id.listViewItem);
         buttonAddTask = findViewById(R.id.addTask);
-
+        //БАЗА ДАННЫХ
         database = App.getInstance().getDatabase();
         taskDao = database.taskDao();
         tasks.clear();
@@ -102,13 +99,13 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new ArrayAdapter<Task>(getApplicationContext(), R.layout.list_item, tasks);
         listViewTask.setAdapter(adapter);
-
     }
 
     void setOnClick(){
         buttonAddTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //ВЬЮ ДЛЯ ДИАЛОГА
                 LayoutInflater inflater = LayoutInflater.from(context);
                 View addTaskView = inflater.inflate(R.layout.view_dialog,null);
                 final EditText name = addTaskView.findViewById(R.id.editNameTask);
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 createTaskDialog.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
                     public void onShow(DialogInterface dialogInterface) {
-
+                        //НАСТРЙОКА ВИДА ДИАЛОГА
                         Button positiveBtn = ((AlertDialog) createTaskDialog).getButton(AlertDialog.BUTTON_POSITIVE);
                         Button setTimeStartBtn = ((AlertDialog) createTaskDialog).findViewById(R.id.setTimeStart);
                         Button setTimeEndBtn = ((AlertDialog) createTaskDialog).findViewById(R.id.setTimeEnd);
@@ -153,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                                 task.setNameTask(nameTask);
                                 task.setDeskTask(descTask);
                                 task.setDate(calendar.toInstant().toString().split("T")[0]);
+                                //ПРОВЕРКА НА ЗАПОЛНЕННОСТЬ ПОЛЕЙ
                                 if(nameTask.equals("") || task.getDateFinish() == null || task.getDateStart() == null || ((myHourStart == myHourEnd) && (myMinStart >= myMinEnd)) || myHourEnd < myHourStart) {
                                     Toast.makeText(getApplicationContext(),"Пустое имя задачи или неверный формат времени!", Toast.LENGTH_SHORT).show();
                                     return;
@@ -160,10 +158,10 @@ public class MainActivity extends AppCompatActivity {
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
+                                        //РАБОТА С БД В ОТДЕЛЬНОМ ПОТОКЕ
                                         taskDao.insert(task);
                                         tasks.clear();
                                         tasks.addAll(taskDao.getAllByDate(calendar.toInstant().toString().split("T")[0]));
-                                        Log.d("testDAO", tasks.toString());
                                     }
                                 }).start();
                                 adapter.notifyDataSetChanged();
@@ -183,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 selMont = i1;
                 selDay = i2;
                 calendar.set(selYear,selMont,selDay);
+                //ОЧИСТКА ДАННЫХ ЗАДАНИЙ ПРИ СМЕНЕ ДАТЫ
                 tasks.clear();
                 new Thread(new Runnable() {
                     @Override
@@ -196,16 +195,39 @@ public class MainActivity extends AppCompatActivity {
         listViewTask.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //ПЕРЕДАЕМ ДАННЫЕ В ФОРМАТЕ gson В INTENT И ЗАПУСКАЕМ ДРУГОЕ ОКНО
                 Intent callTaskFull = new Intent(getApplicationContext(), TaskFull.class);
                 Gson gson = new Gson();
                 callTaskFull.putExtra("task",(String)gson.toJson(tasks.get(i)));
                 startActivity(callTaskFull);
             }
         });
+        //УДАЛЕНИЕ ЗАПИСИ ДЛИННЫМ НАЖАТИЕМ
+        listViewTask.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        taskDao.delete(tasks.get(i));
+                        tasks.clear();
+                        tasks.addAll(taskDao.getAllByDate(calendar.toInstant().toString().split("T")[0]));
+                    }
+                }).start();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+                return false;
+            }
+        });
 
     }
-
-    TimePickerDialog.OnTimeSetListener myCallBack = new TimePickerDialog.OnTimeSetListener() {
+    
+    TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             Calendar calendar = Calendar.getInstance();
             Log.d("hour",String.format("%d %d",hourOfDay,minute));
@@ -228,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected Dialog onCreateDialog(int id) {
         if (id == DIALOG_TIME) {
-            TimePickerDialog tpd = new TimePickerDialog(this, myCallBack, 0, 0, true);
+            TimePickerDialog tpd = new TimePickerDialog(this, timeSetListener, 0, 0, true);
             return tpd;
         }
         return super.onCreateDialog(id);

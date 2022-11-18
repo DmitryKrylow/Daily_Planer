@@ -50,7 +50,8 @@ public class Task {
                 "<ul>\n" +
                 "<li><em><strong><h3>Продолжительность: %s</h3></strong></em><em><strong></strong></em></li>\n" +
                 "<li><em><strong><h3>Описание: %s<h3></strong></em></li>\n" +
-                "</ul>",nameTask,String.format("%02d:%02d-%02d:%02d",new Timestamp(dateStart).getHours(),new Timestamp(dateStart).getMinutes(),new Timestamp(dateFinish).getHours(),new Timestamp(dateFinish).getMinutes()),deskTask),Html.FROM_HTML_MODE_COMPACT);
+                "<li><em><strong><h3>Дата: %s<h3></strong></em></li>\n" +
+                "</ul>",nameTask,String.format("%02d:%02d-%02d:%02d",new Timestamp(dateStart).getHours(),new Timestamp(dateStart).getMinutes(),new Timestamp(dateFinish).getHours(),new Timestamp(dateFinish).getMinutes()),deskTask, date),Html.FROM_HTML_MODE_COMPACT);
     }
 
     public String getDate() {
