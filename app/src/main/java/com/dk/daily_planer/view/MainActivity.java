@@ -1,4 +1,4 @@
-package com.dk.daily_planer;
+package com.dk.daily_planer.view;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -26,6 +26,9 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.dk.daily_planer.App;
+import com.dk.daily_planer.AppDatabase;
+import com.dk.daily_planer.R;
 import com.dk.daily_planer.interfaces.TaskDao;
 import com.dk.daily_planer.models.Task;
 import com.google.gson.Gson;
@@ -206,22 +209,43 @@ public class MainActivity extends AppCompatActivity {
         listViewTask.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                new Thread(new Runnable() {
+                LayoutInflater inflater = LayoutInflater.from(context);
+                View addTaskView = inflater.inflate(R.layout.dialog_delete,null);
+                final AlertDialog createTaskDialog = new AlertDialog.Builder(context)
+                        .setCancelable(false)
+                        .setView(addTaskView)
+                        .setPositiveButton("Да", null)
+                        .setNegativeButton("Нет", null)
+                        .create();
+                createTaskDialog.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
-                    public void run() {
-                        taskDao.delete(tasks.get(i));
-                        tasks.clear();
-                        tasks.addAll(taskDao.getAllByDate(calendar.toInstant().toString().split("T")[0]));
-                    }
-                }).start();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
+                    public void onShow(DialogInterface dialogInterface) {
+                        Button positiveBtn = ((AlertDialog)createTaskDialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                        positiveBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        taskDao.delete(tasks.get(i));
+                                        tasks.clear();
+                                        tasks.addAll(taskDao.getAllByDate(calendar.toInstant().toString().split("T")[0]));
+                                    }
+                                }).start();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+                                createTaskDialog.dismiss();
+                            }
+                        });
                     }
                 });
+                createTaskDialog.show();
 
-                return false;
+                return true;
             }
         });
 
@@ -253,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
             TimePickerDialog tpd = new TimePickerDialog(this, timeSetListener, 0, 0, true);
             return tpd;
         }
+
         return super.onCreateDialog(id);
     }
 }

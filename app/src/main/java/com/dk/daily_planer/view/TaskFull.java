@@ -1,4 +1,4 @@
-package com.dk.daily_planer;
+package com.dk.daily_planer.view;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.dk.daily_planer.R;
 import com.dk.daily_planer.models.Task;
 import com.google.gson.Gson;
 
